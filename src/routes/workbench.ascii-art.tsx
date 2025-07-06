@@ -5,5 +5,5 @@ export const Route = createFileRoute('/workbench/ascii-art')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/workbench/ascii-art"!</div>
+  return <div>ascii-art</div>
 }

@@ -1,18 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/tanstack-react-start'
 
 import LoginForm from '~/components/auth/login-form'
 import { Button } from '~/components/ui/button'
 import logo from '~/assets/piggybanx-bolt.png'
+import { Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: Login,
+  component: Home,
 })
 
 function CommandCenter() {
+  const { user } = useUser()
+  
   return (
     <div className="p-2">
-      <h3>Welcome Home!!!</h3>
-      <LoginForm />
+      <div className="flex items-center justify-between mb-4">
+        <h3>Welcome, Mr. {user?.firstName || user?.username}. Let us beign</h3>
+        <UserButton />
+      </div>
+      <Outlet />
     </div>
   )
 }
@@ -37,5 +44,18 @@ function Login() {
         </div>
       </main>
     </div>
+  )
+}
+
+function Home() {
+  return (
+    <>
+      <SignedIn>
+        <CommandCenter />
+      </SignedIn>
+      <SignedOut>
+        <Login />
+      </SignedOut>
+    </>
   )
 }
