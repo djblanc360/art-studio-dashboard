@@ -10,7 +10,7 @@ function RouteComponent() {
       <h1>Workbench Tools</h1>
       <nav className="space-y-2">
         <Link to="/workbench/ascii-art" className="block text-blue-600 hover:text-blue-800">
-          ASCII Art Tool
+          ASCII Shawnify
         </Link>
         <Link to="/workbench/csv-comparator" className="block text-blue-600 hover:text-blue-800">
           CSV Comparator
