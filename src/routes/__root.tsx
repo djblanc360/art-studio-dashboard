@@ -5,22 +5,22 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
-  useRouter,
 } from '@tanstack/react-router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import * as React from 'react'
 import { Suspense } from 'react'
 import type { QueryClient } from '@tanstack/react-query'
-import { ClerkProvider, SignedIn, SignedOut, useUser } from '@clerk/tanstack-react-start'
+import { ClerkProvider, SignedIn, SignedOut, useUser, SignOutButton } from '@clerk/tanstack-react-start'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
 import { seo } from '~/utils/seo'
 
 import logo from '~/assets/piggybanx-bolt.png'
-import LoginForm from '~/components/auth/login-form'
 import { Button } from '~/components/ui/button'
+import LoginForm from '~/components/auth/login-form'
+
 import { AppSidebar, AppSidebarMobile } from "~/components/app-sidebar"
 import {
   DropdownMenu,
@@ -113,7 +113,11 @@ function CommandCenter() {
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuItem>Support</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <SignOutButton>
+                  <DropdownMenuItem className="cursor-pointer">
+                    Logout
+                  </DropdownMenuItem>
+                </SignOutButton>
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
@@ -126,6 +130,8 @@ function CommandCenter() {
   )
 }
 
+
+
 function Login() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -133,7 +139,7 @@ function Login() {
         <img src={logo} alt="PiggyBanx Logo" width={24} height={24} />
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="sm">
-            Sign Up
+            Support
           </Button>
           <Button variant="default" size="sm">
             Contact
@@ -164,7 +170,10 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
+    >
       <html>
         <head>
           <HeadContent />
