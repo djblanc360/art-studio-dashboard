@@ -1,37 +1,38 @@
 import { Link } from "@tanstack/react-router"
 import { LayoutDashboard, KanbanSquare, Calendar, FlaskConical, Database, Wrench, PanelLeft, Bell } from "lucide-react"
+import logo from '~/assets/piggybanx-bolt.png'
 
 import { Button } from "~/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet"
 
 const menuItems = [
   {
-    href: "/dashboard",
+    href: "/",
     icon: LayoutDashboard,
     label: "Command Center",
   },
   {
-    href: "/dashboard/operations",
+    href: "/operations",
     icon: KanbanSquare,
     label: "Operations",
   },
   {
-    href: "/dashboard/calendar",
+    href: "/calendar",
     icon: Calendar,
     label: "Calendar",
   },
   {
-    href: "/dashboard/the-lab",
+    href: "/the-lab",
     icon: FlaskConical,
     label: "The Lab",
   },
   {
-    href: "/dashboard/banx-database",
+    href: "/banx-database",
     icon: Database,
     label: "BANX Database",
   },
   {
-    href: "/dashboard/workbench",
+    href: "/workbench",
     icon: Wrench,
     label: "Workbench",
   },
@@ -53,7 +54,7 @@ export function AppSidebar() {
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <img src="/piggybanx-bolt.png" width={24} height={24} alt="PiggyBanx" />
+            <img src={logo} width={24} height={24} alt="PiggyBanx" />
             <span className="">PIGGY COMMAND</span>
           </Link>
           <Button variant="outline" size="icon" className="ml-auto h-8 w-8 bg-transparent">

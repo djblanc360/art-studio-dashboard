@@ -14,13 +14,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkbenchRouteImport } from './routes/workbench'
 import { Route as TheLabRouteImport } from './routes/the-lab'
 import { Route as RedirectRouteImport } from './routes/redirect'
-import { Route as OperatonsRouteImport } from './routes/operatons'
+import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as DeferredRouteImport } from './routes/deferred'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as BanxDatabaseRouteImport } from './routes/banx-database'
 import { Route as PathlessLayoutRouteImport } from './routes/_pathlessLayout'
 import { Route as UsersRouteRouteImport } from './routes/users.route'
 import { Route as PostsRouteRouteImport } from './routes/posts.route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkbenchIndexRouteImport } from './routes/workbench.index'
 import { Route as UsersIndexRouteImport } from './routes/users.index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as WorkbenchPinterestOrganizerRouteImport } from './routes/workbench.pinterest-organizer'
@@ -52,9 +54,9 @@ const RedirectRoute = RedirectRouteImport.update({
   path: '/redirect',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OperatonsRoute = OperatonsRouteImport.update({
-  id: '/operatons',
-  path: '/operatons',
+const OperationsRoute = OperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeferredRoute = DeferredRouteImport.update({
@@ -65,6 +67,11 @@ const DeferredRoute = DeferredRouteImport.update({
 const CalendarRoute = CalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BanxDatabaseRoute = BanxDatabaseRouteImport.update({
+  id: '/banx-database',
+  path: '/banx-database',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PathlessLayoutRoute = PathlessLayoutRouteImport.update({
@@ -85,6 +92,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const WorkbenchIndexRoute = WorkbenchIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkbenchRoute,
 } as any)
 const UsersIndexRoute = UsersIndexRouteImport.update({
   id: '/',
@@ -159,9 +171,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/posts': typeof PostsRouteRouteWithChildren
   '/users': typeof UsersRouteRouteWithChildren
+  '/banx-database': typeof BanxDatabaseRoute
   '/calendar': typeof CalendarRoute
   '/deferred': typeof DeferredRoute
-  '/operatons': typeof OperatonsRoute
+  '/operations': typeof OperationsRoute
   '/redirect': typeof RedirectRoute
   '/the-lab': typeof TheLabRoute
   '/workbench': typeof WorkbenchRouteWithChildren
@@ -172,18 +185,19 @@ export interface FileRoutesByFullPath {
   '/workbench/pinterest-organizer': typeof WorkbenchPinterestOrganizerRoute
   '/posts/': typeof PostsIndexRoute
   '/users/': typeof UsersIndexRoute
+  '/workbench/': typeof WorkbenchIndexRoute
   '/route-a': typeof PathlessLayoutNestedLayoutRouteARoute
   '/route-b': typeof PathlessLayoutNestedLayoutRouteBRoute
   '/posts/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/banx-database': typeof BanxDatabaseRoute
   '/calendar': typeof CalendarRoute
   '/deferred': typeof DeferredRoute
-  '/operatons': typeof OperatonsRoute
+  '/operations': typeof OperationsRoute
   '/redirect': typeof RedirectRoute
   '/the-lab': typeof TheLabRoute
-  '/workbench': typeof WorkbenchRouteWithChildren
   '/posts/$postId': typeof PostsPostIdRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/workbench/ascii-art': typeof WorkbenchAsciiArtRoute
@@ -191,6 +205,7 @@ export interface FileRoutesByTo {
   '/workbench/pinterest-organizer': typeof WorkbenchPinterestOrganizerRoute
   '/posts': typeof PostsIndexRoute
   '/users': typeof UsersIndexRoute
+  '/workbench': typeof WorkbenchIndexRoute
   '/route-a': typeof PathlessLayoutNestedLayoutRouteARoute
   '/route-b': typeof PathlessLayoutNestedLayoutRouteBRoute
   '/posts/$postId/deep': typeof PostsPostIdDeepRoute
@@ -201,9 +216,10 @@ export interface FileRoutesById {
   '/posts': typeof PostsRouteRouteWithChildren
   '/users': typeof UsersRouteRouteWithChildren
   '/_pathlessLayout': typeof PathlessLayoutRouteWithChildren
+  '/banx-database': typeof BanxDatabaseRoute
   '/calendar': typeof CalendarRoute
   '/deferred': typeof DeferredRoute
-  '/operatons': typeof OperatonsRoute
+  '/operations': typeof OperationsRoute
   '/redirect': typeof RedirectRoute
   '/the-lab': typeof TheLabRoute
   '/workbench': typeof WorkbenchRouteWithChildren
@@ -215,6 +231,7 @@ export interface FileRoutesById {
   '/workbench/pinterest-organizer': typeof WorkbenchPinterestOrganizerRoute
   '/posts/': typeof PostsIndexRoute
   '/users/': typeof UsersIndexRoute
+  '/workbench/': typeof WorkbenchIndexRoute
   '/_pathlessLayout/_nested-layout/route-a': typeof PathlessLayoutNestedLayoutRouteARoute
   '/_pathlessLayout/_nested-layout/route-b': typeof PathlessLayoutNestedLayoutRouteBRoute
   '/posts_/$postId/deep': typeof PostsPostIdDeepRoute
@@ -225,9 +242,10 @@ export interface FileRouteTypes {
     | '/'
     | '/posts'
     | '/users'
+    | '/banx-database'
     | '/calendar'
     | '/deferred'
-    | '/operatons'
+    | '/operations'
     | '/redirect'
     | '/the-lab'
     | '/workbench'
@@ -238,18 +256,19 @@ export interface FileRouteTypes {
     | '/workbench/pinterest-organizer'
     | '/posts/'
     | '/users/'
+    | '/workbench/'
     | '/route-a'
     | '/route-b'
     | '/posts/$postId/deep'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/banx-database'
     | '/calendar'
     | '/deferred'
-    | '/operatons'
+    | '/operations'
     | '/redirect'
     | '/the-lab'
-    | '/workbench'
     | '/posts/$postId'
     | '/users/$userId'
     | '/workbench/ascii-art'
@@ -257,6 +276,7 @@ export interface FileRouteTypes {
     | '/workbench/pinterest-organizer'
     | '/posts'
     | '/users'
+    | '/workbench'
     | '/route-a'
     | '/route-b'
     | '/posts/$postId/deep'
@@ -266,9 +286,10 @@ export interface FileRouteTypes {
     | '/posts'
     | '/users'
     | '/_pathlessLayout'
+    | '/banx-database'
     | '/calendar'
     | '/deferred'
-    | '/operatons'
+    | '/operations'
     | '/redirect'
     | '/the-lab'
     | '/workbench'
@@ -280,6 +301,7 @@ export interface FileRouteTypes {
     | '/workbench/pinterest-organizer'
     | '/posts/'
     | '/users/'
+    | '/workbench/'
     | '/_pathlessLayout/_nested-layout/route-a'
     | '/_pathlessLayout/_nested-layout/route-b'
     | '/posts_/$postId/deep'
@@ -290,9 +312,10 @@ export interface RootRouteChildren {
   PostsRouteRoute: typeof PostsRouteRouteWithChildren
   UsersRouteRoute: typeof UsersRouteRouteWithChildren
   PathlessLayoutRoute: typeof PathlessLayoutRouteWithChildren
+  BanxDatabaseRoute: typeof BanxDatabaseRoute
   CalendarRoute: typeof CalendarRoute
   DeferredRoute: typeof DeferredRoute
-  OperatonsRoute: typeof OperatonsRoute
+  OperationsRoute: typeof OperationsRoute
   RedirectRoute: typeof RedirectRoute
   TheLabRoute: typeof TheLabRoute
   WorkbenchRoute: typeof WorkbenchRouteWithChildren
@@ -346,11 +369,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RedirectRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/operatons': {
-      id: '/operatons'
-      path: '/operatons'
-      fullPath: '/operatons'
-      preLoaderRoute: typeof OperatonsRouteImport
+    '/operations': {
+      id: '/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof OperationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/deferred': {
@@ -365,6 +388,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/banx-database': {
+      id: '/banx-database'
+      path: '/banx-database'
+      fullPath: '/banx-database'
+      preLoaderRoute: typeof BanxDatabaseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_pathlessLayout': {
@@ -394,6 +424,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/workbench/': {
+      id: '/workbench/'
+      path: '/'
+      fullPath: '/workbench/'
+      preLoaderRoute: typeof WorkbenchIndexRouteImport
+      parentRoute: typeof WorkbenchRoute
     }
     '/users/': {
       id: '/users/'
@@ -555,12 +592,14 @@ interface WorkbenchRouteChildren {
   WorkbenchAsciiArtRoute: typeof WorkbenchAsciiArtRoute
   WorkbenchCsvComparatorRoute: typeof WorkbenchCsvComparatorRoute
   WorkbenchPinterestOrganizerRoute: typeof WorkbenchPinterestOrganizerRoute
+  WorkbenchIndexRoute: typeof WorkbenchIndexRoute
 }
 
 const WorkbenchRouteChildren: WorkbenchRouteChildren = {
   WorkbenchAsciiArtRoute: WorkbenchAsciiArtRoute,
   WorkbenchCsvComparatorRoute: WorkbenchCsvComparatorRoute,
   WorkbenchPinterestOrganizerRoute: WorkbenchPinterestOrganizerRoute,
+  WorkbenchIndexRoute: WorkbenchIndexRoute,
 }
 
 const WorkbenchRouteWithChildren = WorkbenchRoute._addFileChildren(
@@ -584,9 +623,10 @@ const rootRouteChildren: RootRouteChildren = {
   PostsRouteRoute: PostsRouteRouteWithChildren,
   UsersRouteRoute: UsersRouteRouteWithChildren,
   PathlessLayoutRoute: PathlessLayoutRouteWithChildren,
+  BanxDatabaseRoute: BanxDatabaseRoute,
   CalendarRoute: CalendarRoute,
   DeferredRoute: DeferredRoute,
-  OperatonsRoute: OperatonsRoute,
+  OperationsRoute: OperationsRoute,
   RedirectRoute: RedirectRoute,
   TheLabRoute: TheLabRoute,
   WorkbenchRoute: WorkbenchRouteWithChildren,

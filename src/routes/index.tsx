@@ -1,61 +1,119 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/tanstack-react-start'
+"use client"
 
-import LoginForm from '~/components/auth/login-form'
-import { Button } from '~/components/ui/button'
-import logo from '~/assets/piggybanx-bolt.png'
-import { Outlet } from '@tanstack/react-router'
+import { useState } from "react"
+
+import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: Home,
+  component: CommandCenterWidgets,
 })
 
-function CommandCenter() {
-  const { user } = useUser()
-  
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy } from "@dnd-kit/sortable"
+import { Activity, CreditCard, DollarSign, Users } from "lucide-react"
+
+import { SortableCard } from "~/components/command-center/sortable-card"
+import { CardHeader, CardTitle, CardContent } from "~/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
+
+const initialWidgets = [
+    {
+      id: "widget-1",
+      title: "Widget 1",
+      icon: DollarSign,
+      content: "10000",
+      subContent: "10000",
+    },
+    {
+      id: "widget-2",
+      title: "Widget 2",
+      icon: Users,
+      content: "10000",
+      subContent: "10000",
+    },
+    {
+      id: "widget-3",
+      title: "Widget 3",
+      icon: CreditCard,
+      content: "10000",
+      subContent: "10000",
+    },
+    {
+      id: "widget-4",
+      title: "Widget 4",
+      icon: Activity,
+      content: "10000",
+      subContent: "10000",
+    },
+]
+
+function CommandCenterWidgets() {
+  const [widgets, setWidgets] = useState(initialWidgets)
+  const sensors = useSensors(
+      useSensor(PointerSensor),
+      useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      }),
+  )
+
+function handleDragEnd(event: DragEndEvent) {
+  const { active, over } = event
+  if (over && active.id !== over.id) {
+    setWidgets((items) => {
+      const oldIndex = items.findIndex((item) => item.id === active.id)
+      const newIndex = items.findIndex((item) => item.id === over.id)
+      return arrayMove(items, oldIndex, newIndex)
+    })
+  }
+}
   return (
-    <div className="p-2">
-      <div className="flex items-center justify-between mb-4">
-        <h3>Welcome, Mr. {user?.firstName || user?.username}. Let us beign</h3>
-        <UserButton />
+      <>
+      <div className="flex items-center justify-between space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">COMMAND CENTER</h2>
       </div>
-      <Outlet />
-    </div>
-  )
-}
-
-function Login() {
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <header className="flex items-center justify-between p-4 sm:p-6">
-        <img src={logo} alt="PiggyBanx Logo" width={24} height={24} />
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm">
-            Sign Up
-          </Button>
-          <Button variant="default" size="sm">
-            Contact
-          </Button>
-        </div>
-      </header>
-      <main className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md p-8 space-y-8">
-          <LoginForm />
-        </div>
-      </main>
-    </div>
-  )
-}
-
-function Home() {
-  return (
-    <>
-      <SignedIn>
-        <CommandCenter />
-      </SignedIn>
-      <SignedOut>
-        <Login />
-      </SignedOut>
-    </>
+      <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="analytics" disabled>
+              Analytics
+          </TabsTrigger>
+          <TabsTrigger value="reports" disabled>
+              Reports
+          </TabsTrigger>
+          <TabsTrigger value="notifications" disabled>
+              Notifications
+          </TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="space-y-4">
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={widgets.map((w) => w.id)} strategy={rectSortingStrategy}>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  {widgets.map((widget) => (
+                  <SortableCard key={widget.id} id={widget.id}>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">{widget.title}</CardTitle>
+                      <widget.icon className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                      <div className="text-2xl font-bold">{widget.content}</div>
+                      <p className="text-xs text-muted-foreground">{widget.subContent}</p>
+                      </CardContent>
+                  </SortableCard>
+                  ))}
+              </div>
+              </SortableContext>
+          </DndContext>
+          </TabsContent>
+      </Tabs>
+      </>
   )
 }
