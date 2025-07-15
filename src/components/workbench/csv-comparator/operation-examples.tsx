@@ -79,6 +79,23 @@ export const operationDescriptions = {
       "Aggregating Klaviyo list submissions from different sources into one file.",
     ],
   },
+  filter: {
+    title: "Filter Operation",
+    description:
+      "Filters rows from File 1 based on whether the key column matches the specified filter value.",
+    example: {
+      file1: { name: "File 1 (data.csv)", data: file1ExampleData },
+      file2: { name: "", data: [] },
+      output: {
+        name: "Output",
+        data: [{ Email: "test2" }, { Email: "test3" }, { Email: "test3" }, { Email: "test1" }, { Email: "test3" }],
+      },
+    },
+    useCases: [
+      "Remove specific values from a dataset.",
+      "Filter out unwanted entries based on a column value.",
+    ],
+  },
 }
 
 export const ExampleTable = ({ title, data }: { title: string; data: Record<string, any>[] }) => {

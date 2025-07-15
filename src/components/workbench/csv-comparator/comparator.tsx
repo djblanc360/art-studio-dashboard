@@ -10,11 +10,11 @@ import { Label } from "~/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import { FileUploader } from "./file-uploader"
 import { ResultsDisplay } from "./results-display"
-import { matchData, diffData, combineData } from "./operations"
+import { matchData, diffData, combineData, filterData } from "./operations"
 import { AlertCircle, ArrowRight } from "lucide-react"
 
 type CsvData = Record<string, any>[]
-export type Operation = "match" | "diff" | "combo"
+export type Operation = "match" | "diff" | "combo" | "filter"
 
 export type ComparisonSummary = {
   file1RecordCount: number
@@ -33,6 +33,7 @@ export default function CsvComparator() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [keyColumn, setKeyColumn] = useState("Email")
+  const [filterValue, setFilterValue] = useState("")
 
   const handleFile1Upload = (data: CsvData, name: string) => {
     setFile1({ data, name })
@@ -91,6 +92,44 @@ export default function CsvComparator() {
     }, 500)
   }
 
+  const handleFilter = () => {
+    if (!file1) {
+      setError("Please upload a file.")
+      return
+    }
+    if (!keyColumn) {
+      setError("Please enter a column name to use as the key for filtering.")
+      return
+    }
+    setError(null)
+    setLoading(true)
+    setResult(null)
+    setSummary(null)
+
+    setTimeout(() => {
+      try {
+        let output: CsvData = []
+        output = filterData(file1.data, keyColumn, filterValue)
+        setResult(output)
+
+        const newSummary: ComparisonSummary = {
+          file1RecordCount: file1.data.length,
+          file2RecordCount: 0,
+          resultRecordCount: output.length,
+          file1Name: file1.name,
+          file2Name: "",
+        }
+        setSummary(newSummary)
+      } catch (e) {
+        setError("An error occurred during filtering. Please check the file format and content.")
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }, 500)
+  }
+
+  
   const handleDownload = () => {
     if (!result) return
     const csv = Papa.unparse(result)
@@ -109,6 +148,8 @@ export default function CsvComparator() {
       downloadFilename = `diff_${file1Name}_and_${file2Name}.csv`
     } else if (operation === "combo") {
       downloadFilename = `combined_${file1Name}_and_${file2Name}.csv`
+    } else if (operation === "filter") {
+      downloadFilename = `filtered_${file1Name}.csv`
     }
 
     link.setAttribute("download", downloadFilename)
@@ -126,7 +167,9 @@ export default function CsvComparator() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FileUploader onFileProcessed={handleFile1Upload} id="file1" title="Source File (File 1)" />
-            <FileUploader onFileProcessed={handleFile2Upload} id="file2" title="Reference File (File 2)" />
+            {operation !== "filter" && (
+              <FileUploader onFileProcessed={handleFile2Upload} id="file2" title="Reference File (File 2)" />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -176,14 +219,39 @@ export default function CsvComparator() {
                 <RadioGroupItem value="combo" id="combo" />
                 <Label htmlFor="combo">Combine</Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="filter" id="filter" />
+                <Label htmlFor="filter">Filter</Label>
+              </div>
             </RadioGroup>
           </div>
+          {operation === "filter" ? (
+            <>
+            <div>
+              <input
+                id="filter-value"
+                type="text"
+                placeholder="Enter the value to filter out"
+                value={filterValue}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setFilterValue(e.target.value)}
+                className="text-gray-500 w-full max-w-xs p-2 border border-slate-800 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+              />
+            </div>
+            <div className="flex justify-center pt-4">
+              <Button onClick={handleFilter} disabled={!file1 || loading || !keyColumn} size="lg">
+                {loading ? "Filtering..." : "Run Filter"}
+                {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+              </Button>
+            </div>
+            </>
+          ) : (
           <div className="flex justify-center pt-4">
             <Button onClick={handleCompare} disabled={!file1 || !file2 || loading || !keyColumn} size="lg">
               {loading ? "Comparing..." : "Run Comparison"}
               {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
             </Button>
           </div>
+          )}
         </CardContent>
       </Card>
 

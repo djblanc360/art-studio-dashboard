@@ -45,6 +45,13 @@ const SummaryDisplay = ({ summary, operation }: { summary: ComparisonSummary; op
       resultLabel = `Total unique records combined`
       rateLabel = "" // No rate for combo
       break
+    case "filter":
+      resultLabel = `Records after filtering`
+      rateLabel = "Retention rate"
+      if (file1RecordCount > 0) {
+        rate = (resultRecordCount / file1RecordCount) * 100
+      }
+      break
   }
 
   return (

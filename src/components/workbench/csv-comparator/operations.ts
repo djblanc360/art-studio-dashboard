@@ -30,3 +30,9 @@ export function matchData(data1: CsvData, data2: CsvData, key: string): CsvData 
     return value && keySet2.has(value)
   })
 }
+
+// filter data that does not contain the filter value
+export function filterData(data: CsvData, key: string, filterValue: string): CsvData {
+  const normalizedFilterValue = filterValue.toLowerCase().trim()
+  return data.filter((row) => row[key]?.toString().toLowerCase().trim() !== normalizedFilterValue)
+}
