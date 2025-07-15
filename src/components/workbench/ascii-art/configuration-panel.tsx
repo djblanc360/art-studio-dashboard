@@ -124,7 +124,7 @@ export function ConfigurationPanel({
           </Label>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="art-width" className="text-xs">Width (up to 10,000)</Label>
+              <Label htmlFor="art-width" className="text-xs">Width (up to 1,000)</Label>
               <Input
                 id="art-width"
                 type="number"
@@ -139,7 +139,7 @@ export function ConfigurationPanel({
               />
             </div>
             <div>
-              <Label htmlFor="art-height" className="text-xs">Height (up to 10,000)</Label>
+              <Label htmlFor="art-height" className="text-xs">Height (up to 1,000)</Label>
               <Input
                 id="art-height"
                 type="number"
@@ -155,7 +155,7 @@ export function ConfigurationPanel({
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Large dimensions (5000x7000+) will take longer to process but should work.
+            Large dimensions (500x700+) will take longer to process but should work.
           </p>
         </div>
 
