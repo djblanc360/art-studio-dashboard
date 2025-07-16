@@ -25,6 +25,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkbenchIndexRouteImport } from './routes/workbench.index'
 import { Route as UsersIndexRouteImport } from './routes/users.index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
+import { Route as WorkbenchPropertyEvaluaterRouteImport } from './routes/workbench.property-evaluater'
 import { Route as WorkbenchPinterestOrganizerRouteImport } from './routes/workbench.pinterest-organizer'
 import { Route as WorkbenchCsvComparatorRouteImport } from './routes/workbench.csv-comparator'
 import { Route as WorkbenchAsciiArtRouteImport } from './routes/workbench.ascii-art'
@@ -108,6 +109,12 @@ const PostsIndexRoute = PostsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PostsRouteRoute,
 } as any)
+const WorkbenchPropertyEvaluaterRoute =
+  WorkbenchPropertyEvaluaterRouteImport.update({
+    id: '/property-evaluater',
+    path: '/property-evaluater',
+    getParentRoute: () => WorkbenchRoute,
+  } as any)
 const WorkbenchPinterestOrganizerRoute =
   WorkbenchPinterestOrganizerRouteImport.update({
     id: '/pinterest-organizer',
@@ -183,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/workbench/ascii-art': typeof WorkbenchAsciiArtRoute
   '/workbench/csv-comparator': typeof WorkbenchCsvComparatorRoute
   '/workbench/pinterest-organizer': typeof WorkbenchPinterestOrganizerRoute
+  '/workbench/property-evaluater': typeof WorkbenchPropertyEvaluaterRoute
   '/posts/': typeof PostsIndexRoute
   '/users/': typeof UsersIndexRoute
   '/workbench/': typeof WorkbenchIndexRoute
@@ -203,6 +211,7 @@ export interface FileRoutesByTo {
   '/workbench/ascii-art': typeof WorkbenchAsciiArtRoute
   '/workbench/csv-comparator': typeof WorkbenchCsvComparatorRoute
   '/workbench/pinterest-organizer': typeof WorkbenchPinterestOrganizerRoute
+  '/workbench/property-evaluater': typeof WorkbenchPropertyEvaluaterRoute
   '/posts': typeof PostsIndexRoute
   '/users': typeof UsersIndexRoute
   '/workbench': typeof WorkbenchIndexRoute
@@ -229,6 +238,7 @@ export interface FileRoutesById {
   '/workbench/ascii-art': typeof WorkbenchAsciiArtRoute
   '/workbench/csv-comparator': typeof WorkbenchCsvComparatorRoute
   '/workbench/pinterest-organizer': typeof WorkbenchPinterestOrganizerRoute
+  '/workbench/property-evaluater': typeof WorkbenchPropertyEvaluaterRoute
   '/posts/': typeof PostsIndexRoute
   '/users/': typeof UsersIndexRoute
   '/workbench/': typeof WorkbenchIndexRoute
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/workbench/ascii-art'
     | '/workbench/csv-comparator'
     | '/workbench/pinterest-organizer'
+    | '/workbench/property-evaluater'
     | '/posts/'
     | '/users/'
     | '/workbench/'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/workbench/ascii-art'
     | '/workbench/csv-comparator'
     | '/workbench/pinterest-organizer'
+    | '/workbench/property-evaluater'
     | '/posts'
     | '/users'
     | '/workbench'
@@ -299,6 +311,7 @@ export interface FileRouteTypes {
     | '/workbench/ascii-art'
     | '/workbench/csv-comparator'
     | '/workbench/pinterest-organizer'
+    | '/workbench/property-evaluater'
     | '/posts/'
     | '/users/'
     | '/workbench/'
@@ -446,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostsIndexRouteImport
       parentRoute: typeof PostsRouteRoute
     }
+    '/workbench/property-evaluater': {
+      id: '/workbench/property-evaluater'
+      path: '/property-evaluater'
+      fullPath: '/workbench/property-evaluater'
+      preLoaderRoute: typeof WorkbenchPropertyEvaluaterRouteImport
+      parentRoute: typeof WorkbenchRoute
+    }
     '/workbench/pinterest-organizer': {
       id: '/workbench/pinterest-organizer'
       path: '/pinterest-organizer'
@@ -592,6 +612,7 @@ interface WorkbenchRouteChildren {
   WorkbenchAsciiArtRoute: typeof WorkbenchAsciiArtRoute
   WorkbenchCsvComparatorRoute: typeof WorkbenchCsvComparatorRoute
   WorkbenchPinterestOrganizerRoute: typeof WorkbenchPinterestOrganizerRoute
+  WorkbenchPropertyEvaluaterRoute: typeof WorkbenchPropertyEvaluaterRoute
   WorkbenchIndexRoute: typeof WorkbenchIndexRoute
 }
 
@@ -599,6 +620,7 @@ const WorkbenchRouteChildren: WorkbenchRouteChildren = {
   WorkbenchAsciiArtRoute: WorkbenchAsciiArtRoute,
   WorkbenchCsvComparatorRoute: WorkbenchCsvComparatorRoute,
   WorkbenchPinterestOrganizerRoute: WorkbenchPinterestOrganizerRoute,
+  WorkbenchPropertyEvaluaterRoute: WorkbenchPropertyEvaluaterRoute,
   WorkbenchIndexRoute: WorkbenchIndexRoute,
 }
 
