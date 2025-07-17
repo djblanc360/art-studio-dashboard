@@ -18,8 +18,8 @@ function RouteComponent() {
         <Link to="/workbench/pinterest-organizer" className="block text-blue-600 hover:text-blue-800">
           Pinterest Organizer
         </Link>
-        <Link to="/workbench/property-evaluation" className="block text-blue-600 hover:text-blue-800">
-          Home Body
+        <Link to="/workbench/property-evaluator" className="block text-blue-600 hover:text-blue-800">
+          Property Evaluator
         </Link>
       </nav>
     </div>
