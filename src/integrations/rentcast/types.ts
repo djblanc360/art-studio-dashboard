@@ -1,6 +1,39 @@
 // CSV data type consistent with existing app
 export type CsvData = Record<string, any>[];
 
+/**
+ * Detailed filtering result for individual collectors
+ */
+export type FilteredCollectorDetail = {
+  collector: CollectorSubmission;
+  reason: string;
+  category: 'incomplete' | 'non-us' | 'po-box' | 'apartment' | 'custom';
+}
+
+/**
+ * Enhanced filtering statistics with detailed breakdown
+ */
+export type DetailedFilterStats = {
+  originalCount: number;
+  validCount: number;
+  removedCount: number;
+  removalPercentage: string;
+  breakdown: {
+    incomplete: FilteredCollectorDetail[];
+    nonUS: FilteredCollectorDetail[];
+    poBox: FilteredCollectorDetail[];
+    apartment: FilteredCollectorDetail[];
+    custom: FilteredCollectorDetail[];
+  };
+  summary: {
+    incompleteCount: number;
+    nonUSCount: number;
+    poBoxCount: number;
+    apartmentCount: number;
+    customCount: number;
+  };
+}
+
 // Core collector submission data from CSV
 export type CollectorSubmission = {
   email: string;
@@ -70,6 +103,8 @@ export type ProcessingResults = {
   enrichedCSV: string;
   validCollectorCount: number;
   filteredOutCount: number;
+  isSnapshot?: boolean;
+  detailedFilterStats?: DetailedFilterStats;
 };
 
 // Wealth distribution report

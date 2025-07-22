@@ -13,6 +13,8 @@ import {
   validateCollectors,
   prepareCollectorsForProcessing,
   buildProcessingResults,
+  prepareCollectorsForSnapshot,
+  buildSnapshotResults,
 } from "./processing"
 import { createRentCastService } from "./index";
 
@@ -71,8 +73,9 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
     marketingConsent: z.string().optional(),
     winner: z.string().optional(),
   })),
+  showSnapshot: z.boolean().optional().default(false),
 })).handler(async ({ data }) => {
-  const { collectors } = data;
+  const { collectors, showSnapshot } = data;
   if (!RENTCAST_API_KEY) {
     throw new Error('RentCast API key not configured');
   }
@@ -83,6 +86,7 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
 
   console.group(`🎨 Art Collector Evaluation Request`);
   console.log(`Received ${collectors.length} collector submissions`);
+  console.log(`Show filtering snapshot: ${showSnapshot}`);
 
   // Validate collector data
   const validation = validateCollectors(collectors);
@@ -96,12 +100,41 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
     console.warn(`⚠️ Validation warnings:`, validation.warnings);
   }
 
-  console.log(`✅ Starting wealth assessment for ${collectors.length} collectors`);
+  console.log(`✅ Starting ${showSnapshot ? 'filtering preview' : 'wealth assessment'} for ${collectors.length} collectors`);
   console.groupEnd();
 
-  // Process collectors directly
-  const service = createRentCastService(RENTCAST_API_KEY);
-  
+  // If showSnapshot is enabled, use detailed filtering and skip API calls
+  if (showSnapshot) {
+    // Use detailed filtering for snapshot view
+    const { validCollectors, detailedStats } = prepareCollectorsForSnapshot(collectors, {
+      excludeNonUS: true,
+      excludePOBoxes: true,
+      excludeApartments: true,
+    });
+
+    // Create mock enriched collectors for snapshot view with zero wealth scores
+    const mockEnrichedCollectors: CollectorWithWealth[] = validCollectors.map(collector => ({
+      ...collector,
+      wealthScore: 0,
+      propertyType: 'Owner' as const,
+      rawValue: 0,
+      estimationMethod: 'Unknown' as const,
+    }));
+
+    // Build results with detailed filtering stats
+    const results = buildSnapshotResults(mockEnrichedCollectors, detailedStats);
+
+    console.group(`📊 Filtering Snapshot Complete`);
+    console.log(`✅ Filtering analysis complete for ${collectors.length} collectors`);
+    console.log(`📋 Valid collectors found: ${validCollectors.length}`);
+    console.log(`❌ Filtered out: ${detailedStats.removedCount} (${detailedStats.removalPercentage}%)`);
+    console.log(`📊 Breakdown: Incomplete: ${detailedStats.summary.incompleteCount}, Non-US: ${detailedStats.summary.nonUSCount}, PO Box: ${detailedStats.summary.poBoxCount}, Apartments: ${detailedStats.summary.apartmentCount}`);
+    console.groupEnd();
+
+    return results;
+  }
+
+  // Original processing flow when showSnapshot is false
   // Filter collectors
   const { validCollectors, filterStats } = prepareCollectorsForProcessing(collectors, {
     excludeNonUS: true,
@@ -111,6 +144,8 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
 
   console.log(`📋 Processing ${validCollectors.length} valid collectors (filtered out ${filterStats.removedCount})`);
 
+  const service = createRentCastService(RENTCAST_API_KEY);
+
   // Process each collector through RentCast API
   const enrichedCollectors: CollectorWithWealth[] = [];
   
@@ -118,20 +153,20 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
     const collector = validCollectors[i];
     console.log(`🏠 Evaluating ${i + 1}/${validCollectors.length}: ${collector.firstName} ${collector.lastName}`);
     
-    // try {
-    //   const enrichedCollector = await service.assessCollectorWealth(collector);
-    //   enrichedCollectors.push(enrichedCollector);
-    // } catch (error) {
-    //   console.error(`❌ Failed to assess ${collector.email}:`, error);
-    //   // Add collector with zero wealth score if assessment fails
-    //   enrichedCollectors.push({
-    //     ...collector,
-    //     wealthScore: 0,
-    //     propertyType: 'Owner',
-    //     rawValue: 0,
-    //     estimationMethod: 'Unknown',
-    //   });
-    // }
+    try {
+      const enrichedCollector = await service.assessCollectorWealth(collector);
+      enrichedCollectors.push(enrichedCollector);
+    } catch (error) {
+      console.error(`❌ Failed to assess ${collector.email}:`, error);
+      // Add collector with zero wealth score if assessment fails
+      enrichedCollectors.push({
+        ...collector,
+        wealthScore: 0,
+        propertyType: 'Owner',
+        rawValue: 0,
+        estimationMethod: 'Unknown',
+      });
+    }
   }
 
   // Sort by wealth score (highest first)

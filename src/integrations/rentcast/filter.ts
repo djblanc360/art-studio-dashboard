@@ -1,6 +1,39 @@
 import type { CollectorSubmission, FilterOptions } from './types';
 
 /**
+ * Detailed filtering result for individual collectors
+ */
+export interface FilteredCollectorDetail {
+  collector: CollectorSubmission;
+  reason: string;
+  category: 'incomplete' | 'non-us' | 'po-box' | 'apartment' | 'custom';
+}
+
+/**
+ * Enhanced filtering statistics with detailed breakdown
+ */
+export interface DetailedFilterStats {
+  originalCount: number;
+  validCount: number;
+  removedCount: number;
+  removalPercentage: string;
+  breakdown: {
+    incomplete: FilteredCollectorDetail[];
+    nonUS: FilteredCollectorDetail[];
+    poBox: FilteredCollectorDetail[];
+    apartment: FilteredCollectorDetail[];
+    custom: FilteredCollectorDetail[];
+  };
+  summary: {
+    incompleteCount: number;
+    nonUSCount: number;
+    poBoxCount: number;
+    apartmentCount: number;
+    customCount: number;
+  };
+}
+
+/**
  * Check if address is a PO Box
  */
 export function isPOBoxAddress(address: string): boolean {
@@ -113,25 +146,134 @@ export function filterCollectors(
   const filteringPercentage = ((totalFiltered / collectors.length) * 100).toFixed(1);
 
   console.log(`📊 Filtering Statistics:`);
-  console.log(`  📍 Total addresses processed: ${collectors.length}`);
-  console.log(`  ❌ Total addresses filtered: ${totalFiltered} (${filteringPercentage}%)`);
-  console.log(`  📋 Breakdown of filtered addresses:`);
+  console.log(`📍 Total addresses processed: ${collectors.length}`);
+  console.log(`❌ Total addresses filtered: ${totalFiltered} (${filteringPercentage}%)`);
+  console.log(`📋 Breakdown of filtered addresses:`);
   
   if (excludeNonUS) {
-    console.log(`    🌍 Non-US addresses: ${totalNonUSFiltered}`);
+    console.log(`🌍 Non-US addresses: ${totalNonUSFiltered}`);
   }
   
   if (excludePOBoxes) {
-    console.log(`    📮 PO Box addresses: ${totalPOBoxesFiltered}`);
+    console.log(`📮 PO Box addresses: ${totalPOBoxesFiltered}`);
   }
   
   if (excludeApartments) {
-    console.log(`    🏢 Apartment/rental addresses: ${totalApartmentsFiltered}`);
+    console.log(`🏢 Apartment/rental addresses: ${totalApartmentsFiltered}`);
   }
   
   console.groupEnd();
 
   return filteredCollectors;
+}
+
+/**
+ * Apply filters with detailed tracking for snapshot view
+ */
+export function filterCollectorsWithDetails(
+  collectors: CollectorSubmission[],
+  options: FilterOptions = {}
+): {
+  validCollectors: CollectorSubmission[];
+  detailedStats: DetailedFilterStats;
+} {
+  const {
+    excludeNonUS,
+    excludePOBoxes,
+    excludeApartments,
+    customFilters = []
+  } = options;
+
+  const filteredDetails: {
+    incomplete: FilteredCollectorDetail[];
+    nonUS: FilteredCollectorDetail[];
+    poBox: FilteredCollectorDetail[];
+    apartment: FilteredCollectorDetail[];
+    custom: FilteredCollectorDetail[];
+  } = {
+    incomplete: [],
+    nonUS: [],
+    poBox: [],
+    apartment: [],
+    custom: [],
+  };
+
+  const validCollectors = collectors.filter(collector => {
+    // Check address completeness first (always required)
+    if (!hasValidAddressInfo(collector)) {
+      filteredDetails.incomplete.push({
+        collector,
+        reason: 'Missing required address information (address, city, or state)',
+        category: 'incomplete'
+      });
+      return false;
+    }
+
+    // Apply US filter (only if explicitly enabled)
+    if (excludeNonUS && !isUSAddress(collector)) {
+      filteredDetails.nonUS.push({
+        collector,
+        reason: `Non-US address: ${collector.country}`,
+        category: 'non-us'
+      });
+      return false;
+    }
+
+    // Apply PO Box filter (only if explicitly enabled)
+    if (excludePOBoxes && isPOBoxAddress(collector.deliveryAddress)) {
+      filteredDetails.poBox.push({
+        collector,
+        reason: `PO Box address: ${collector.deliveryAddress}`,
+        category: 'po-box'
+      });
+      return false;
+    }
+
+    // Apply apartment/rental filter (only if explicitly enabled)
+    if (excludeApartments && isRentalAddress(collector.deliveryAddress)) {
+      filteredDetails.apartment.push({
+        collector,
+        reason: `Apartment/rental address: ${collector.deliveryAddress}`,
+        category: 'apartment'
+      });
+      return false;
+    }
+
+    // Apply custom filters
+    for (const filter of customFilters) {
+      if (!filter(collector)) {
+        filteredDetails.custom.push({
+          collector,
+          reason: 'Failed custom filter',
+          category: 'custom'
+        });
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const removedCount = collectors.length - validCollectors.length;
+  const detailedStats: DetailedFilterStats = {
+    originalCount: collectors.length,
+    validCount: validCollectors.length,
+    removedCount,
+    removalPercentage: ((removedCount / collectors.length) * 100).toFixed(1),
+    breakdown: filteredDetails,
+    summary: {
+      incompleteCount: filteredDetails.incomplete.length,
+      nonUSCount: filteredDetails.nonUS.length,
+      poBoxCount: filteredDetails.poBox.length,
+      apartmentCount: filteredDetails.apartment.length,
+      customCount: filteredDetails.custom.length,
+    }
+  };
+
+  return {
+    validCollectors,
+    detailedStats
+  };
 }
 
 /**

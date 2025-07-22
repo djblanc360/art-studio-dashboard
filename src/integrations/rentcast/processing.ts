@@ -7,9 +7,10 @@ import type {
   WealthReport,
   CSVExportOptions,
   FilterOptions,
-  CsvData
+  CsvData,
+  DetailedFilterStats
 } from './types';
-import { filterCollectors, getFilteringStats } from './filter';
+import { filterCollectors, getFilteringStats, filterCollectorsWithDetails } from './filter';
 
 /**
  * Generate wealth distribution report
@@ -101,7 +102,7 @@ export function convertToCSV(
       'User Type': collector.userType,
       'Marketing Consent': collector.marketingConsent,
       'Winner': collector.winner,
-      'Wealth Score': collector.wealthScore
+      'Property Value': collector.wealthScore
     };
 
     if (includeInternalFields) {
@@ -366,6 +367,26 @@ export function prepareCollectorsForProcessing(
 }
 
 /**
+ * Process collectors for snapshot view with detailed filtering tracking
+ */
+export function prepareCollectorsForSnapshot(
+  collectors: CollectorSubmission[],
+  filterOptions?: FilterOptions
+): {
+  validCollectors: CollectorSubmission[];
+  detailedStats: DetailedFilterStats;
+} {
+  const { validCollectors, detailedStats } = filterCollectorsWithDetails(collectors, filterOptions);
+
+  console.log(`Snapshot analysis: ${validCollectors.length} valid collectors (filtered out ${detailedStats.removedCount})`);
+
+  return {
+    validCollectors,
+    detailedStats,
+  };
+}
+
+/**
  * Build processing results from enriched collectors
  */
 export function buildProcessingResults(
@@ -388,6 +409,34 @@ export function buildProcessingResults(
     enrichedCSV,
     validCollectorCount: enrichedCollectors.length,
     filteredOutCount: filterStats.removedCount,
+  };
+}
+
+/**
+ * Build processing results for snapshot mode with detailed filtering stats
+ */
+export function buildSnapshotResults(
+  enrichedCollectors: CollectorWithWealth[],
+  detailedStats: DetailedFilterStats
+): ProcessingResults {
+  // Generate report
+  const report = generateWealthReport(enrichedCollectors);
+
+  // Get priority collectors (will be empty for snapshots with 0 wealth scores)
+  const priorityCollectors = enrichedCollectors.filter(c => c.wealthScore >= 1500000);
+
+  // Generate enriched CSV
+  const enrichedCSV = convertToCSV(enrichedCollectors);
+
+  return {
+    allCollectors: enrichedCollectors,
+    priorityCollectors,
+    report,
+    enrichedCSV,
+    validCollectorCount: enrichedCollectors.length,
+    filteredOutCount: detailedStats.removedCount,
+    isSnapshot: true,
+    detailedFilterStats: detailedStats,
   };
 }
 
