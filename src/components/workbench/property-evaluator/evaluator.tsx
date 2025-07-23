@@ -62,11 +62,7 @@ export default function PropertyEvaluator() {
         throw new Error('No CSV data to process');
       }
 
-      setState(prev => ({ 
-        ...prev, 
-        progress: { current: 0, total: csvData.length, currentCollector: 'Starting evaluation...' }
-      }));
-
+      // Remove progress tracking since server function can't update it
       const results = await evaluateCollectors({
         data: {
           collectors: csvData,
@@ -74,15 +70,9 @@ export default function PropertyEvaluator() {
         }
       });
 
-      setState(prev => ({ 
-        ...prev, 
-        progress: null,
-        results,
-      }));
-
       return results;
     },
-    enabled: false, // Only run when explicitly triggered
+    enabled: false,
   });
 
   /**
@@ -261,24 +251,14 @@ export default function PropertyEvaluator() {
           </div>
 
           {/* Progress Display */}
-          {state.progress && (
+          {isProcessing && (
             <div className="space-y-3">
-              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>Evaluating: {state.progress.currentCollector}</span>
-                <span>{state.progress.current} / {state.progress.total}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-blue-600 h-3 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
-                  style={{ width: `${(state.progress.current / state.progress.total) * 100}%` }}
-                >
-                  <span className="text-xs text-white font-medium">
-                    {Math.round((state.progress.current / state.progress.total) * 100)}%
-                  </span>
-                </div>
+              <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Processing {csvData.length} collectors through RentCast API...</span>
               </div>
               <p className="text-xs text-gray-500">
-                Processing property values and rent estimates to calculate wealth scores...
+                This may take a few minutes for large datasets. Please wait...
               </p>
             </div>
           )}

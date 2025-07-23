@@ -95,7 +95,19 @@ export type RentCastComparable = {
   correlation: number;
 };
 
-// Processing results
+export type PropertyRecord = {
+  id: string;
+  formattedAddress: string;
+  propertyType: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  squareFootage?: number;
+  latitude?: number;
+  longitude?: number;
+  yearBuilt?: number;
+  lotSize?: number;
+};
+
 export type ProcessingResults = {
   allCollectors: CollectorWithWealth[];
   priorityCollectors: CollectorWithWealth[];
@@ -107,7 +119,6 @@ export type ProcessingResults = {
   detailedFilterStats?: DetailedFilterStats;
 };
 
-// Wealth distribution report
 export type WealthReport = {
   totalCollectors: number;
   // rich: number;
@@ -121,14 +132,12 @@ export type WealthReport = {
 // Progress callback type
 export type ProgressCallback = (completed: number, total: number, current: string) => void;
 
-// API configuration
 export type RentCastConfig = {
   apiKey: string;
   baseUrl?: string;
   rateLimit?: number; // milliseconds between requests
 };
 
-// Filter options
 export type FilterOptions = {
   excludeNonUS?: boolean;
   excludePOBoxes?: boolean;
@@ -138,7 +147,6 @@ export type FilterOptions = {
 
 // Removed WealthThresholds - simplified to just use wealth scores
 
-// CSV export options
 export type CSVExportOptions = {
   includeInternalFields?: boolean;
   customHeaders?: Record<string, string>;
