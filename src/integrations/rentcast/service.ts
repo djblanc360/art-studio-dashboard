@@ -134,7 +134,7 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
     return results;
   }
 
-  // Original processing flow when showSnapshot is false
+  // Original processing flow
   // Filter collectors
   const { validCollectors, filterStats } = prepareCollectorsForProcessing(collectors, {
     excludeNonUS: true,
@@ -216,4 +216,82 @@ export const getMonthlyRent = createServerFn({ method: 'POST' })
 
   const service = createRentCastService(RENTCAST_API_KEY);
   return service.getMonthlyRent(address);
+});
+
+export const generateCollectorCSV = createServerFn({ method: 'POST' })
+.validator(z.object({
+  collectors: z.array(z.object({
+    email: z.string(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    deliveryAddress: z.string(),
+    city: z.string(),
+    state: z.string(),
+    country: z.string(),
+    launch: z.string().optional(),
+    postcode: z.string(),
+    product: z.string().optional(),
+    cohort: z.string().optional(),
+    userType: z.string().optional(),
+    marketingConsent: z.string().optional(),
+    winner: z.string().optional(),
+    wealthScore: z.number(),
+    propertyType: z.string(),
+    rawValue: z.number(),
+    estimationMethod: z.string(),
+  })),
+})).handler(async ({ data }) => {
+  const { collectors } = data;
+  
+  console.log(`🔄 Generating streaming CSV for ${collectors.length} collectors...`);
+
+  
+  // Create CSV header
+  const headers = [
+    'Email', 'First Name', 'Last Name', 'Delivery Address', 'City', 'State', 
+    'Country', 'Launch', 'Postcode', 'Product', 'Cohort', 'User Type', 
+    'Marketing Consent', 'Winner', 'Property Value', 'Property Type', 
+    'Raw Value', 'Estimation Method'
+  ];
+  
+  // Build CSV content in batches to avoid memory issues
+  const csvLines: string[] = [];
+  csvLines.push(headers.join(','));
+  
+  // Process collectors in batches - data already sorted!
+  const batchSize = 50;
+  for (let i = 0; i < collectors.length; i += batchSize) {
+    const batch = collectors.slice(i, i + batchSize);
+    
+    for (const collector of batch) {
+      const row = [
+        `"${(collector.email || '').replace(/"/g, '""')}"`,
+        `"${(collector.firstName || '').replace(/"/g, '""')}"`,
+        `"${(collector.lastName || '').replace(/"/g, '""')}"`,
+        `"${(collector.deliveryAddress || '').replace(/"/g, '""')}"`,
+        `"${(collector.city || '').replace(/"/g, '""')}"`,
+        `"${(collector.state || '').replace(/"/g, '""')}"`,
+        `"${(collector.country || '').replace(/"/g, '""')}"`,
+        `"${(collector.launch || '').replace(/"/g, '""')}"`,
+        `"${(collector.postcode || '').replace(/"/g, '""')}"`,
+        `"${(collector.product || '').replace(/"/g, '""')}"`,
+        `"${(collector.cohort || '').replace(/"/g, '""')}"`,
+        `"${(collector.userType || '').replace(/"/g, '""')}"`,
+        `"${(collector.marketingConsent || '').replace(/"/g, '""')}"`,
+        `"${(collector.winner || '').replace(/"/g, '""')}"`,
+      ];
+      csvLines.push(row.join(','));
+    }
+    
+    // Small yield to prevent blocking
+    if (i % 100 === 0) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
+  
+  const csvContent = csvLines.join('\n');
+  console.log(`✅ CSV generated: ${csvContent.length} characters for ${collectors.length} collectors`);
+  
+  // Return just the CSV string
+  return csvContent;
 });

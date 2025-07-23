@@ -399,8 +399,12 @@ export function buildProcessingResults(
   // Get priority collectors
   const priorityCollectors = enrichedCollectors.filter(c => c.wealthScore >= 1500000);
 
-  // Generate enriched CSV
-  const enrichedCSV = convertToCSV(enrichedCollectors);
+  // Skip CSV generation for large datasets - handle via separate endpoint
+  const enrichedCSV = enrichedCollectors.length > 100 
+    ? `Large dataset (${enrichedCollectors.length} collectors) - CSV will be generated on download`
+    : convertToCSV(enrichedCollectors);
+
+  console.log(`📊 Results built: ${enrichedCollectors.length} collectors, ${priorityCollectors.length} priority, CSV: ${enrichedCSV.length > 200 ? 'deferred' : 'included'}`);
 
   return {
     allCollectors: enrichedCollectors,

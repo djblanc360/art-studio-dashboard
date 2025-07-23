@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '~/comp
 import { Loader2, Download, AlertCircle, ArrowRight,DollarSign,Users,TrendingUp,Target,PiggyBank, Type, Info} from 'lucide-react';
 import type { CollectorSubmission, CollectorWithWealth, ProcessingResults,CsvData} from '~/integrations/rentcast/types';
 
-import { evaluateCollectors } from '~/integrations/rentcast/service';
+import { evaluateCollectors, generateCollectorCSV } from '~/integrations/rentcast/service';
 import { FileUploader } from './file-uploader';
 
 import { useQuery } from '@tanstack/react-query';
@@ -50,9 +50,6 @@ export default function PropertyEvaluator() {
     }));
   }, []);
 
-  /**
-   * Use useQuery to process collectors
-   */
   const {
     data: results,
     isLoading: isProcessing,
@@ -89,23 +86,51 @@ export default function PropertyEvaluator() {
   });
 
   /**
-   * Download enriched CSV using Papaparse
+   * Download enriched CSV using streaming backend endpoint
    */
-  const downloadEnrichedCSV = useCallback(() => {
-    if (!results?.enrichedCSV) return;
+  const downloadEnrichedCSV = useCallback(async () => {
+    if (!results?.allCollectors) return;
 
-    const blob = new Blob([results.enrichedCSV], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    
-    const baseFileName = csvFile?.name.replace('.csv', '') || 'collectors';
-    link.download = `${baseFileName}_with_property_scores_${new Date().toISOString().split('T')[0]}.csv`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      if (results.allCollectors.length > 100) {
+        const csvContent = await generateCollectorCSV({
+          data: { collectors: results.allCollectors }
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const baseFileName = csvFile?.name.replace('.csv', '') || 'collectors';
+        link.download = `${baseFileName}_with_property_scores_${new Date().toISOString().split('T')[0]}.csv`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        // For smaller datasets, use the existing CSV content
+        if (results.enrichedCSV && results.enrichedCSV.length > 200) {
+          const blob = new Blob([results.enrichedCSV], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          
+          const baseFileName = csvFile?.name.replace('.csv', '') || 'collectors';
+          link.download = `${baseFileName}_with_property_scores_${new Date().toISOString().split('T')[0]}.csv`;
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          console.log(`✅ Small dataset CSV download completed`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ CSV download failed:', error);
+    }
   }, [results, csvFile]);
 
   /**
