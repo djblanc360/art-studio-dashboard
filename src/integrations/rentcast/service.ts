@@ -279,6 +279,10 @@ export const generateCollectorCSV = createServerFn({ method: 'POST' })
         `"${(collector.userType || '').replace(/"/g, '""')}"`,
         `"${(collector.marketingConsent || '').replace(/"/g, '""')}"`,
         `"${(collector.winner || '').replace(/"/g, '""')}"`,
+        `${collector.wealthScore || 0}`, // Property Value
+        `"${(collector.propertyType || '').replace(/"/g, '""')}"`, // Property Type
+        `${collector.rawValue || 0}`, // Raw Value
+        `"${(collector.estimationMethod || '').replace(/"/g, '""')}"`, // Estimation Method
       ];
       csvLines.push(row.join(','));
     }

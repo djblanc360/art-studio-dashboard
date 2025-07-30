@@ -82,7 +82,17 @@ export default function PropertyEvaluator() {
     if (!results?.allCollectors) return;
 
     try {
-      if (results.allCollectors.length > 100) {
+      const isSnapshot = results.isSnapshot;
+      const baseFileName = csvFile?.name.replace('.csv', '') || 'collectors';
+      const dateStamp = new Date().toISOString().split('T')[0];
+      
+      // Determine filename based on mode
+      const filename = isSnapshot 
+        ? `${baseFileName}_filtered_snapshot_${dateStamp}.csv`
+        : `${baseFileName}_with_property_scores_${dateStamp}.csv`;
+
+      if (results.allCollectors.length > 100 && !isSnapshot) {
+        // Use streaming for large non-snapshot datasets
         const csvContent = await generateCollectorCSV({
           data: { collectors: results.allCollectors }
         });
@@ -91,31 +101,28 @@ export default function PropertyEvaluator() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        
-        const baseFileName = csvFile?.name.replace('.csv', '') || 'collectors';
-        link.download = `${baseFileName}_with_property_scores_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = filename;
         
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } else {
-        // For smaller datasets, use the existing CSV content
+        // For smaller datasets or snapshots, use the existing CSV content
         if (results.enrichedCSV && results.enrichedCSV.length > 200) {
           const blob = new Blob([results.enrichedCSV], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          
-          const baseFileName = csvFile?.name.replace('.csv', '') || 'collectors';
-          link.download = `${baseFileName}_with_property_scores_${new Date().toISOString().split('T')[0]}.csv`;
+          link.download = filename;
           
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
           URL.revokeObjectURL(url);
           
-          console.log(`✅ Small dataset CSV download completed`);
+          const mode = isSnapshot ? 'snapshot' : 'evaluation';
+          console.log(`✅ ${mode} CSV download completed`);
         }
       }
     } catch (error) {
@@ -281,12 +288,10 @@ export default function PropertyEvaluator() {
                   }
                 </CardDescription>
               </div>
-              {!results.isSnapshot && (
-                <Button onClick={downloadEnrichedCSV} className="mt-4 sm:mt-0">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Enhanced CSV
-                </Button>
-              )}
+              <Button onClick={downloadEnrichedCSV} className="mt-4 sm:mt-0">
+                <Download className="mr-2 h-4 w-4" />
+                {results.isSnapshot ? 'Download Filtered List' : 'Download Enhanced CSV'}
+              </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -461,7 +466,7 @@ export default function PropertyEvaluator() {
                 <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">
                   Priority Collectors for Targeting: {results.priorityCollectors.length}
                 </h4>
-                <div className="overflow-x-auto rounded-lg border">
+                <div className="overflow-x-auto rounded-lg border max-h-96">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -473,7 +478,7 @@ export default function PropertyEvaluator() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {results.priorityCollectors.slice(0, 10).map((collector, index) => (
+                      {results.priorityCollectors.map((collector, index) => (
                         <TableRow key={collector.email} className={index % 2 === 0 ? 'bg-white dark:bg-gray-950' : 'bg-gray-50 dark:bg-gray-900/50'}>
                           <TableCell className="font-medium">
                             {collector.firstName} {collector.lastName}
@@ -503,12 +508,6 @@ export default function PropertyEvaluator() {
                     </TableBody>
                   </Table>
                 </div>
-                {results.priorityCollectors.length > 10 && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    Showing top 10 of {results.priorityCollectors.length} priority collectors. 
-                    Download full CSV for complete data.
-                  </p>
-                )}
               </div>
             )}
           </CardContent>
