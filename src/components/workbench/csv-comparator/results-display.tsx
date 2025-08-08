@@ -52,6 +52,10 @@ const SummaryDisplay = ({ summary, operation }: { summary: ComparisonSummary; op
         rate = (resultRecordCount / file1RecordCount) * 100
       }
       break
+    case "concat":
+      resultLabel = `Records after concatenation`
+      rateLabel = "" // no rate for concat
+      break
   }
 
   return (

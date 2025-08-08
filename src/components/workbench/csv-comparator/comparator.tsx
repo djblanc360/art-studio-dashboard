@@ -10,11 +10,11 @@ import { Label } from "~/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 import { FileUploader } from "./file-uploader"
 import { ResultsDisplay } from "./results-display"
-import { matchData, diffData, combineData, filterData } from "./operations"
+import { matchData, diffData, combineData, filterData, concatData } from "./operations"
 import { AlertCircle, ArrowRight } from "lucide-react"
 
 type CsvData = Record<string, any>[]
-export type Operation = "match" | "diff" | "combo" | "filter"
+export type Operation = "match" | "diff" | "combo" | "filter" | "concat"
 
 export type ComparisonSummary = {
   file1RecordCount: number
@@ -34,6 +34,7 @@ export default function CsvComparator() {
   const [error, setError] = useState<string | null>(null)
   const [keyColumn, setKeyColumn] = useState("Email")
   const [filterValue, setFilterValue] = useState("")
+  const [concatValues, setConcatValues] = useState<string[]>([])
 
   const handleFile1Upload = (data: CsvData, name: string) => {
     setFile1({ data, name })
@@ -129,6 +130,51 @@ export default function CsvComparator() {
     }, 500)
   }
 
+  const handleConcat = () => {
+    if (!file1) {
+      setError("Please upload a file.")
+      return
+    }
+    if (!file2) {
+      setError("Please upload a reference file.")
+      return
+    }
+    if (!concatValues.length) {
+      setError("Please enter at least one value to concatenate.")
+      return
+    }
+    if (!keyColumn) {
+      setError("Please enter a column name to use as the key for concatenation.")
+      return
+    }
+    setError(null)
+    setLoading(true)
+    setResult(null)
+    setSummary(null)
+
+    setTimeout(() => {
+      try {
+        let output: CsvData = []
+        output = concatData(file1.data, file2.data, keyColumn, concatValues)
+        setResult(output)
+
+        const newSummary: ComparisonSummary = {
+          file1RecordCount: file1.data.length,
+          file2RecordCount: file2.data.length,
+          resultRecordCount: output.length,
+          file1Name: file1.name,
+          file2Name: file2.name,
+        }
+        setSummary(newSummary)
+      } catch (e) {
+        setError("An error occurred during concatenation. Please check the file format and content.")
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }, 500)
+  }
+
   
   const handleDownload = () => {
     if (!result) return
@@ -147,9 +193,11 @@ export default function CsvComparator() {
     } else if (operation === "diff") {
       downloadFilename = `diff_${file1Name}_and_${file2Name}.csv`
     } else if (operation === "combo") {
-      downloadFilename = `combined_${file1Name}_and_${file2Name}.csv`
+      downloadFilename = `combine_${file1Name}_and_${file2Name}.csv`
     } else if (operation === "filter") {
-      downloadFilename = `filtered_${file1Name}.csv`
+      downloadFilename = `filter_${file1Name}.csv`
+    } else if (operation === "concat") {
+      downloadFilename = `concat_${file1Name}_and_${file2Name}.csv`
     }
 
     link.setAttribute("download", downloadFilename)
@@ -223,6 +271,10 @@ export default function CsvComparator() {
                 <RadioGroupItem value="filter" id="filter" />
                 <Label htmlFor="filter">Filter</Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="concat" id="concat" />
+                <Label htmlFor="concat">Concat</Label>
+              </div>
             </RadioGroup>
           </div>
           {operation === "filter" ? (
@@ -240,6 +292,25 @@ export default function CsvComparator() {
             <div className="flex justify-center pt-4">
               <Button onClick={handleFilter} disabled={!file1 || loading || !keyColumn} size="lg">
                 {loading ? "Filtering..." : "Run Filter"}
+                {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+              </Button>
+            </div>
+            </>
+          ) : operation === "concat" ? (
+            <>
+            <div>
+              <input
+                id="concat-keys"
+                type="text"
+                placeholder="Enter column names to add from file 2 (e.g., Name,Age,City)"
+                value={concatValues.join(",")}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setConcatValues(e.target.value.split(","))}
+                className="text-gray-500 w-full max-w-xs p-2 border border-slate-800 rounded-md bg-white dark:bg-gray-800 dark:border-gray-700"
+              />
+            </div>
+            <div className="flex justify-center pt-4">
+              <Button onClick={handleConcat} disabled={!file1 || !file2 || loading || !keyColumn} size="lg">
+                {loading ? "Concatenating..." : "Run Concatenation"}
                 {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
               </Button>
             </div>
