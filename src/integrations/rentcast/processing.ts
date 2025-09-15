@@ -95,13 +95,7 @@ export function convertToCSV(
       'City': collector.city,
       'State': collector.state,
       'Country': collector.country,
-      'Launch': collector.launch,
       'Postcode': collector.postcode,
-      'Product': collector.product,
-      'Cohort': collector.cohort,
-      'User Type': collector.userType,
-      'Marketing Consent': collector.marketingConsent,
-      'Winner': collector.winner,
       'Property Value': collector.wealthScore
     };
 
@@ -304,13 +298,8 @@ function mapToCollectorSubmissions(data: CsvData): CollectorSubmission[] {
         city: getValue(['City', 'city']),
         state: getValue(['State', 'state', 'Province']),
         country: getValue(['Country', 'country']),
-        launch: getValue(['Launch', 'launch']),
         postcode: getValue(['Postcode', 'postcode', 'Postal Code', 'ZIP', 'zip']),
-        product: getValue(['Product', 'product']),
-        cohort: getValue(['Cohort', 'cohort']),
         userType: getValue(['User Type', 'userType', 'user_type', 'UserType']),
-        marketingConsent: getValue(['Marketing Consent', 'marketingConsent', 'marketing_consent']),
-        winner: getValue(['Winner', 'winner']),
       };
     } catch (error) {
       throw new Error(`Error mapping row ${index + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);

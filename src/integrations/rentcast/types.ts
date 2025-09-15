@@ -43,12 +43,7 @@ export type CollectorSubmission = {
   city: string;
   state: string;
   country: string;
-  launch?: string;
   postcode: string;
-  product?: string;
-  cohort?: string;
-  userType?: string;
-  marketingConsent?: string;
   winner?: string;
 };
 

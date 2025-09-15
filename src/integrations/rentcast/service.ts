@@ -33,13 +33,7 @@ export const assessCollectorWealth = createServerFn({ method: 'POST' })
     city: z.string(),
     state: z.string(),
     country: z.string(),
-    launch: z.string().optional(),
     postcode: z.string(),
-    product: z.string().optional(),
-    cohort: z.string().optional(),
-    userType: z.string().optional(),
-    marketingConsent: z.string().optional(),
-    winner: z.string().optional(),
   }),
 })).handler(async ({ data }) => {
   const { collector } = data;
@@ -65,12 +59,7 @@ export const evaluateCollectors = createServerFn({ method: 'POST' })
     city: z.string(),
     state: z.string(),
     country: z.string(),
-    launch: z.string().optional(),
     postcode: z.string(),
-    product: z.string().optional(),
-    cohort: z.string().optional(),
-    userType: z.string().optional(),
-    marketingConsent: z.string().optional(),
     winner: z.string().optional(),
   })),
   showSnapshot: z.boolean().optional().default(false),
@@ -228,17 +217,11 @@ export const generateCollectorCSV = createServerFn({ method: 'POST' })
     city: z.string(),
     state: z.string(),
     country: z.string(),
-    launch: z.string().optional(),
     postcode: z.string(),
-    product: z.string().optional(),
-    cohort: z.string().optional(),
     userType: z.string().optional(),
-    marketingConsent: z.string().optional(),
-    winner: z.string().optional(),
     wealthScore: z.number(),
     propertyType: z.string(),
-    rawValue: z.number(),
-    estimationMethod: z.string(),
+    rawValue: z.number(), // Add this line
   })),
 })).handler(async ({ data }) => {
   const { collectors } = data;
@@ -249,9 +232,7 @@ export const generateCollectorCSV = createServerFn({ method: 'POST' })
   // Create CSV header
   const headers = [
     'Email', 'First Name', 'Last Name', 'Delivery Address', 'City', 'State', 
-    'Country', 'Launch', 'Postcode', 'Product', 'Cohort', 'User Type', 
-    'Marketing Consent', 'Winner', 'Property Value', 'Property Type', 
-    'Raw Value', 'Estimation Method'
+    'Country', 'Postcode', 'User Type', 'Property Value', 'Property Type'
   ];
   
   // Build CSV content in batches to avoid memory issues
@@ -272,17 +253,11 @@ export const generateCollectorCSV = createServerFn({ method: 'POST' })
         `"${(collector.city || '').replace(/"/g, '""')}"`,
         `"${(collector.state || '').replace(/"/g, '""')}"`,
         `"${(collector.country || '').replace(/"/g, '""')}"`,
-        `"${(collector.launch || '').replace(/"/g, '""')}"`,
         `"${(collector.postcode || '').replace(/"/g, '""')}"`,
-        `"${(collector.product || '').replace(/"/g, '""')}"`,
-        `"${(collector.cohort || '').replace(/"/g, '""')}"`,
         `"${(collector.userType || '').replace(/"/g, '""')}"`,
-        `"${(collector.marketingConsent || '').replace(/"/g, '""')}"`,
-        `"${(collector.winner || '').replace(/"/g, '""')}"`,
         `${collector.wealthScore || 0}`, // Property Value
         `"${(collector.propertyType || '').replace(/"/g, '""')}"`, // Property Type
         `${collector.rawValue || 0}`, // Raw Value
-        `"${(collector.estimationMethod || '').replace(/"/g, '""')}"`, // Estimation Method
       ];
       csvLines.push(row.join(','));
     }
