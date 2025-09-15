@@ -56,54 +56,15 @@ export class RentCastService {
    */
   async getPropertyValue(address: string): Promise<number> {
     try {
-      // Step 1: Get property records to fetch property details
-      const propertyRecords = await this.getPropertyRecords(address);
-      
-      if (propertyRecords.length === 0) {
-        console.warn(`No property records found for ${address}, falling back to basic value estimate`);
-        // Fallback to basic value estimate without property details
-        const response = await fetch(
-          `${this.config.baseUrl}/avm/value?address=${encodeURIComponent(address)}`,
-          {
-            headers: {
-              'X-Api-Key': this.config.apiKey,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          console.warn(`Property value API error for ${address}: ${response.status}`);
-          return 0;
-        }
-
-        const data: RentCastValueResponse = await response.json();
-        return data.price || 0;
-      }
-
-      // Step 3: Extract property details from first record (result[0])
-      const property = propertyRecords[0];
-      const { propertyType, bedrooms, bathrooms, squareFootage } = property;
-
-      // Step 4: Build enhanced query parameters for value estimate
+      // Use single endpoint with automatic subject property attribute lookup
       const params = new URLSearchParams({
         address: address,
-        compCount: '20' // Hard-coded per remail thread
+        compCount: '20', // Hard-coded per remail thread
+        lookupSubjectAttributes: 'true' // Enable automatic property attribute lookup
       });
 
-      // Add property details if available to improve accuracy
-      if (propertyType) params.append('propertyType', propertyType);
-      if (bedrooms !== undefined && bedrooms !== null) params.append('bedrooms', bedrooms.toString());
-      if (bathrooms !== undefined && bathrooms !== null) params.append('bathrooms', bathrooms.toString());
-      if (squareFootage !== undefined && squareFootage !== null) params.append('squareFootage', squareFootage.toString());
+      console.log(`🏠 Getting property value for ${address} with automatic attribute lookup`);
 
-      console.log(`🏠 Enhanced value estimate for ${address} with details:`, {
-        propertyType,
-        bedrooms,
-        bathrooms,
-        squareFootage
-      });
-
-      // Step 4: Get enhanced property value estimate with property details
       const response = await fetch(
         `${this.config.baseUrl}/avm/value?${params.toString()}`,
         {
@@ -114,15 +75,25 @@ export class RentCastService {
       );
 
       if (!response.ok) {
-        console.warn(`Enhanced property value API error for ${address}: ${response.status}`);
+        console.warn(`Property value API error for ${address}: ${response.status}`);
         return 0;
       }
 
-      // Step 5: Extract price from response body
       const data: RentCastValueResponse = await response.json();
+      
+      // Log the subject property details that were automatically looked up
+      if (data.subjectProperty) {
+        console.log(`🏠 Subject property details for ${address}:`, {
+          propertyType: data.subjectProperty.propertyType,
+          bedrooms: data.subjectProperty.bedrooms,
+          bathrooms: data.subjectProperty.bathrooms,
+          squareFootage: data.subjectProperty.squareFootage
+        });
+      }
+
       return data.price || 0;
     } catch (error) {
-      console.error(`Error fetching enhanced property value for ${address}:`, error);
+      console.error(`Error fetching property value for ${address}:`, error);
       return 0;
     }
   }

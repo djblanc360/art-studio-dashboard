@@ -255,7 +255,10 @@ export default function PropertyEvaluator() {
                 <p className="text-xs text-gray-500">Note: will not run scraping API calls if this is enabled.</p>
               </div>
             </div>
+
           </div>
+
+          
 
           {/* Progress Display */}
           {isProcessing && (

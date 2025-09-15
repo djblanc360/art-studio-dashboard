@@ -76,6 +76,28 @@ export type RentCastValueResponse = {
   latitude: number;
   longitude: number;
   comparables?: RentCastComparable[];
+  subjectProperty?: {
+    id: string;
+    formattedAddress: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    stateFips: string;
+    zipCode: string;
+    county: string;
+    countyFips: string;
+    latitude: number;
+    longitude: number;
+    propertyType: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    squareFootage?: number;
+    lotSize?: number;
+    yearBuilt?: number;
+    lastSaleDate?: string;
+    lastSalePrice?: number;
+  };
 };
 
 export type RentCastRentResponse = {
